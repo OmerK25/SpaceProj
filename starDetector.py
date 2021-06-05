@@ -14,6 +14,9 @@ class Star:
         print("X : ", self.x, "| Y :", self.y,
               "| R : ", self.r, "| NAME : ", self.name)
 
+    def __str__(self):
+        return "X : ", self.x, " | Y :", self.y, " | R: ", self.r, " | NAME :", self.name
+
 
 class Triangle:
 
@@ -50,13 +53,19 @@ class Triangle:
         angles.append(gamma)
         return angles
 
+    def __str__(self):
+        return str(self.getDistances())
 
-# s1 = Star(1, 26, 3, "HI")
-# s2 = Star(10, 2, 3, "HA")
-# s3 = Star(15, 22, 3, "HO")
-# stars = [s1, s2, s3]
-# T = Triangle(stars)
-# print(T.getAngles())
+#splitting a vector of stars into all possible triples.
+def find_all_triplets(starsVec):
+    allTriples = []
+    for i in range(0, len(starsVec)-2):
+        for j in range(i+1, len(starsVec)-1):
+            for k in range(j + 1, len(starsVec)):
+                st = [starsVec[i], starsVec[j], starsVec[k]]
+                T = Triangle(st)
+                allTriples.append(T)
+    return allTriples
 
 def takeRadius(elem):
     return float(elem[2])
@@ -66,7 +75,7 @@ def takeX(elem):
     return float(elem[0])
 
 
-file_name = '90DEG.jpg'
+file_name = 'stars1.jpg'
 image = cv2.imread(file_name)
 orig = image.copy()
 imgheight, imgwidth = image.shape[:2]
@@ -98,12 +107,10 @@ for contour in contours:
 
 connectivity = 4
 
-cv2.imshow("Naive", orig)
-cv2.imwrite("%s_processed.jpg" % file_name, orig)
+# cv2.imshow("Naive", orig)
+# cv2.imwrite("%s_processed.jpg" % file_name, orig)
 
 res.sort(key=takeX, reverse=False)
-
-abs(float() - float()) <= 0.5
 
 # remove duplicates
 final_res = []
@@ -116,10 +123,15 @@ for i in range(len(res)):
         final_res.append(res[i])
 
 # print(final_res)  # list of all the star locations.
-s1 = Star(final_res[0][0], final_res[1][0], final_res[2][0], "1")
-s2 = Star(final_res[0][1], final_res[1][1], final_res[2][1], "1")
-s3 = Star(final_res[0][2], final_res[1][2], final_res[2][2], "1")
-s = [s1, s2, s3]
-T = Triangle(s)
-print(T.getDistances())
+
+#Creating an array of all the stars in the picture
+allStars = []
+for i in range(0,len(final_res)-1):
+    s = Star(final_res[i][0], final_res[i][1], final_res[i][2], "unknown")
+    allStars.append(s)
+
+allTriples = find_all_triplets(allStars)
+# for i in range(0, len(allTriples)):
+    # print(i)
+# print(T.getDistances())
 # print(T.getAngles(), " : ANGLES")
