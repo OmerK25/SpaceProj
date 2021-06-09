@@ -10,10 +10,6 @@ class Star:
         self.r = r
         self.name = name
 
-    def printStar(self):
-        print("X : ", self.x, "| Y :", self.y,
-              "| R : ", self.r, "| NAME : ", self.name)
-
     def __str__(self):
         return "X : ", self.x, " | Y :", self.y, " | R: ", self.r, " | NAME :", self.name
 
@@ -56,16 +52,41 @@ class Triangle:
     def __str__(self):
         return str(self.getDistances())
 
-#splitting a vector of stars into all possible triples.
+# splitting a vector of stars into all possible triples.
+
+
 def find_all_triplets(starsVec):
     allTriples = []
     for i in range(0, len(starsVec)-2):
         for j in range(i+1, len(starsVec)-1):
             for k in range(j + 1, len(starsVec)):
-                st = [starsVec[i], starsVec[j], starsVec[k]]
-                T = Triangle(st)
-                allTriples.append(T)
+
+                st1 = [starsVec[i], starsVec[j], starsVec[k]]
+                T1 = Triangle(st1)
+                allTriples.append(T1)
+
+                st2 = [starsVec[i], starsVec[k], starsVec[j]]
+                T2 = Triangle(st2)
+                allTriples.append(T2)
+
+                st3 = [starsVec[j], starsVec[i], starsVec[k]]
+                T3 = Triangle(st3)
+                allTriples.append(T3)
+
+                st4 = [starsVec[j], starsVec[k], starsVec[i]]
+                T4 = Triangle(st4)
+                allTriples.append(T4)
+
+                st5 = [starsVec[k], starsVec[i], starsVec[j]]
+                T5 = Triangle(st5)
+                allTriples.append(T5)
+
+                st6 = [starsVec[k], starsVec[j], starsVec[i]]
+                T6 = Triangle(st6)
+                allTriples.append(T6)
+
     return allTriples
+
 
 def takeRadius(elem):
     return float(elem[2])
@@ -75,7 +96,7 @@ def takeX(elem):
     return float(elem[0])
 
 
-file_name = 'stars1.jpg'
+file_name = 'st.jpg'
 image = cv2.imread(file_name)
 orig = image.copy()
 imgheight, imgwidth = image.shape[:2]
@@ -101,7 +122,7 @@ for contour in contours:
     y = str(y)
     r = str(radius)
 
-    if (radius > 1 and radius < 8):
+    if (radius > 1 and radius < 5):
         cv2.circle(orig, center, radius+4, (0, 255, 255), 5)
         res.append([x, y, radius])
 
@@ -124,14 +145,15 @@ for i in range(len(res)):
 
 # print(final_res)  # list of all the star locations.
 
-#Creating an array of all the stars in the picture
+# Creating an array of all the stars in the picture
 allStars = []
-for i in range(0,len(final_res)-1):
+for i in range(0, len(final_res)):
     s = Star(final_res[i][0], final_res[i][1], final_res[i][2], "unknown")
     allStars.append(s)
 
 allTriples = find_all_triplets(allStars)
-# for i in range(0, len(allTriples)):
-    # print(i)
+for i in range(0, len(allTriples)):
+    print(i)
+
 # print(T.getDistances())
 # print(T.getAngles(), " : ANGLES")
