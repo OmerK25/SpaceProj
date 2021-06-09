@@ -1,17 +1,19 @@
 import numpy as np
 import cv2
 import math
-
+import pandas as pd
 
 class Star:
-    def __init__(self, x, y, r, name):
+    def __init__(self, x, y, r, name,ra):
         self.x = x
         self.y = y
         self.r = r
         self.name = name
+        self.ra = ra
+
 
     def __str__(self):
-        return "X : ", self.x, " | Y :", self.y, " | R: ", self.r, " | NAME :", self.name
+        return "X : ", self.x, " | Y :", self.y, " | R: ", self.r, " | NAME :", self.name," | RA : ",self.ra
 
 
 class Triangle:
@@ -52,8 +54,30 @@ class Triangle:
     def __str__(self):
         return str(self.getDistances())
 
-# splitting a vector of stars into all possible triples.
+df = pd.read_csv("hygdata_v3.csv")
+#df.head(20) # show table
+# df.isnull().sum() # count null in each cols for tables
+df[['proper']] = df[['proper']].fillna(value="unknown")
+starsFromCatalog = []
+for i in range(20):
+  x = df.iloc[i].loc['x']
+  y = df.iloc[i].loc['y']
+  radius = df.iloc[i].loc['mag']
+  name = df.iloc[i].loc['proper']
+  ra = df.iloc[i].loc['ra']
+  starsFromCatalog.append(Star(x, y, radius, name,ra))
 
+def toString(x, y, radius, name):
+  print("location: (",x,",",y,")", " radius: ", radius, " Starname: ", name)
+
+# for i in range(len(starsFromCatalog)):
+#   x = starsFromCatalog[i].x
+#   y = starsFromCatalog[i].y
+#   radius = starsFromCatalog[i].r
+#   name = starsFromCatalog[i].name
+#   toString(x, y, radius, name)
+
+# splitting a vector of stars into all possible triples.
 
 def find_all_triplets(starsVec):
     allTriples = []
@@ -95,6 +119,9 @@ def takeRadius(elem):
 def takeX(elem):
     return float(elem[0])
 
+TriplesFromCatalog = find_all_triplets(starsFromCatalog)
+# for i in range(len(TriplesFromCatalog)):
+#     print(i)
 
 file_name = 'st.jpg'
 image = cv2.imread(file_name)
@@ -128,8 +155,8 @@ for contour in contours:
 
 connectivity = 4
 
-# cv2.imshow("Naive", orig)
-# cv2.imwrite("%s_processed.jpg" % file_name, orig)
+cv2.imshow("Naive", orig)
+cv2.imwrite("%s_processed.jpg" % file_name, orig)
 
 res.sort(key=takeX, reverse=False)
 
@@ -148,12 +175,15 @@ for i in range(len(res)):
 # Creating an array of all the stars in the picture
 allStars = []
 for i in range(0, len(final_res)):
-    s = Star(final_res[i][0], final_res[i][1], final_res[i][2], "unknown")
+    s = Star(final_res[i][0], final_res[i][1], final_res[i][2], "unknown","noRA")
     allStars.append(s)
 
-allTriples = find_all_triplets(allStars)
-for i in range(0, len(allTriples)):
-    print(i)
+allTriplesFromFrame = find_all_triplets(allStars)
+# for i in range(0, len(allTriples)):
+#     print(i)
 
-# print(T.getDistances())
+# print(.TgetDistances())
 # print(T.getAngles(), " : ANGLES")
+
+#TrianglesFromCatalog
+#allTriplesFromFrame
