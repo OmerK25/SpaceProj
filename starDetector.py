@@ -4,16 +4,17 @@ import math
 import pandas as pd
 
 class Star:
-    def __init__(self, x, y, r, name,ra):
+    def __init__(self, x, y, r, name,ra,dec):
         self.x = x
         self.y = y
         self.r = r
         self.name = name
         self.ra = ra
+        self.dec = dec
 
 
     def __str__(self):
-        return "X : ", self.x, " | Y :", self.y, " | R: ", self.r, " | NAME :", self.name," | RA : ",self.ra
+        return "X : ", self.x, " | Y :", self.y, " | R: ", self.r, " | NAME :", self.name," | RA : ",self.ra," | dec : ",self.dec
 
 
 class Triangle:
@@ -65,7 +66,8 @@ for i in range(20):
   radius = df.iloc[i].loc['mag']
   name = df.iloc[i].loc['proper']
   ra = df.iloc[i].loc['ra']
-  starsFromCatalog.append(Star(x, y, radius, name,ra))
+  dec = df.iloc[i].loc['dec']
+  starsFromCatalog.append(Star(x, y, radius, name,ra,dec))
 
 def toString(x, y, radius, name):
   print("location: (",x,",",y,")", " radius: ", radius, " Starname: ", name)
@@ -175,7 +177,7 @@ for i in range(len(res)):
 # Creating an array of all the stars in the picture
 allStars = []
 for i in range(0, len(final_res)):
-    s = Star(final_res[i][0], final_res[i][1], final_res[i][2], "unknown","noRA")
+    s = Star(final_res[i][0], final_res[i][1], final_res[i][2], "unknown", "noRA", "noDec")
     allStars.append(s)
 
 allTriplesFromFrame = find_all_triplets(allStars)
@@ -187,3 +189,47 @@ allTriplesFromFrame = find_all_triplets(allStars)
 
 #TrianglesFromCatalog
 #allTriplesFromFrame
+
+def RMS(catalogTripletDistances: list, frameTripletDistances: list):
+    return np.sqrt(np.sum(np.square(catalogTripletDistances-frameTripletDistances))/len(catalogTripletDistances))
+
+def AD(star1, star2):
+    return math.sin(star1.dec)*math.sin(star2.dec) + math.cos(star1.dec)*math.cos(star2.dec)*math.cos(star1.ra-star2.ra)
+
+def BFalgorithm(f, bsc):
+    """
+    Find match between stars captured in frame and a priori star database.
+    :param Frame(f)
+    :param starDatabase(bsc)
+    :return: The 3 matching stars
+    """
+    # let <p1, p2, p3> triplet of stars from the frame(p=<x,y>)
+    # let <si, sj, st> triplet of stars from the database(p=star)
+    # let <dp1, dp2, dp3> be the distances from each two stars(distance in pixels)
+    bscDistances = []
+    S = 1
+    for a in bsc:
+        bscDistances.append([S * AD(a[0], a[1]), S * AD(a[1], a[2]), S * AD(a[0], a[2]), a])
+
+        # for b in bsc:
+        #     for c in bsc:
+        #         if a == b or a == c or b == c:
+        #             continue
+        #         S = 0
+
+    # let bscDistances <dsi, dsj, dst> be the distances from each two stars(angular)
+
+    starMatch = []
+    for a in f:
+        triangle = Triangle()
+        minD = 9999
+        for b in bscDistances:
+            if minD > RMS(a.getDistances(), b):
+                triangle = b[3]
+                minD = RMS(a.getDistances(), b)
+        starMatch.append(triangle)
+
+    return starMatch
+
+
+print(BFalgorithm(allTriplesFromFrame, TriplesFromCatalog))
