@@ -3,8 +3,9 @@ import cv2
 import math
 import pandas as pd
 
+
 class Star:
-    def __init__(self, x, y, r, name,ra,dec):
+    def __init__(self, x, y, r, name, ra, dec):
         self.x = x
         self.y = y
         self.r = r
@@ -12,9 +13,8 @@ class Star:
         self.ra = ra
         self.dec = dec
 
-
     def __str__(self):
-        return "X : ", self.x, " | Y :", self.y, " | R: ", self.r, " | NAME :", self.name," | RA : ",self.ra," | dec : ",self.dec
+        return "X : ", self.x, " | Y :", self.y, " | R: ", self.r, " | NAME :", self.name, " | RA : ", self.ra, " | dec : ", self.dec
 
 
 class Triangle:
@@ -25,10 +25,10 @@ class Triangle:
     def getDistances(self):
         distances = []
         for i in range(len(self.stars)):
-            for j in range(i+1, len(self.stars)):
-                x = float(self.stars[i].x)-float(self.stars[j].x)
-                y = float(self.stars[i].y)-float(self.stars[j].y)
-                d = math.sqrt(x*x+y*y)
+            for j in range(i + 1, len(self.stars)):
+                x = float(self.stars[i].x) - float(self.stars[j].x)
+                y = float(self.stars[i].y) - float(self.stars[j].y)
+                d = math.sqrt(x * x + y * y)
                 distances.append(d)
         return distances
 
@@ -55,23 +55,28 @@ class Triangle:
     def __str__(self):
         return str(self.getDistances())
 
+
 df = pd.read_csv("hygdata_v3.csv")
-#df.head(20) # show table
+# df.head(20) # show table
 # df.isnull().sum() # count null in each cols for tables
 df[['proper']] = df[['proper']].fillna(value="unknown")
 starsFromCatalog = []
 print(len(df))
 for i in range(len(df)):
-  x = df.iloc[i].loc['x']
-  y = df.iloc[i].loc['y']
-  radius = df.iloc[i].loc['mag']
-  name = df.iloc[i].loc['proper']
-  ra = df.iloc[i].loc['ra']
-  dec = df.iloc[i].loc['dec']
-  starsFromCatalog.append(Star(x, y, radius, name,ra,dec))
+    radius = df.iloc[i].loc['mag']
+
+    if radius < 3:
+        name = df.iloc[i].loc['proper']
+        x = df.iloc[i].loc['x']
+        y = df.iloc[i].loc['y']
+        ra = df.iloc[i].loc['ra']
+        dec = df.iloc[i].loc['dec']
+        starsFromCatalog.append(Star(x, y, radius, name, ra, dec))
+print(len(starsFromCatalog))
 
 def toString(x, y, radius, name):
-  print("location: (",x,",",y,")", " radius: ", radius, " Starname: ", name)
+    print("location: (", x, ",", y, ")", " radius: ", radius, " Starname: ", name)
+
 
 # for i in range(len(starsFromCatalog)):
 #   x = starsFromCatalog[i].x
@@ -82,36 +87,15 @@ def toString(x, y, radius, name):
 
 # splitting a vector of stars into all possible triples.
 
-def find_all_triplets(starsVec,fromFrame):
+def find_all_triplets(starsVec):
     allTriples = []
-    for i in range(0, len(starsVec)-2):
-        for j in range(i+1, len(starsVec)-1):
+    for i in range(0, len(starsVec) - 2):
+        for j in range(i + 1, len(starsVec) - 1):
             for k in range(j + 1, len(starsVec)):
 
                 st1 = [starsVec[i], starsVec[j], starsVec[k]]
                 T1 = Triangle(st1)
                 allTriples.append(T1)
-
-                if(fromFrame):
-                    st2 = [starsVec[i], starsVec[k], starsVec[j]]
-                    T2 = Triangle(st2)
-                    allTriples.append(T2)
-
-                    st3 = [starsVec[j], starsVec[i], starsVec[k]]
-                    T3 = Triangle(st3)
-                    allTriples.append(T3)
-
-                    st4 = [starsVec[j], starsVec[k], starsVec[i]]
-                    T4 = Triangle(st4)
-                    allTriples.append(T4)
-
-                    st5 = [starsVec[k], starsVec[i], starsVec[j]]
-                    T5 = Triangle(st5)
-                    allTriples.append(T5)
-
-                    st6 = [starsVec[k], starsVec[j], starsVec[i]]
-                    T6 = Triangle(st6)
-                    allTriples.append(T6)
 
     return allTriples
 
@@ -123,11 +107,13 @@ def takeRadius(elem):
 def takeX(elem):
     return float(elem[0])
 
-TriplesFromCatalog = find_all_triplets(starsFromCatalog,False)
+
+TriplesFromCatalog = find_all_triplets(starsFromCatalog)
+print("catalog end")
 # for i in range(len(TriplesFromCatalog)):
 #     print(i)
 
-file_name = 'st.jpg'
+file_name = 'new.jpg'
 image = cv2.imread(file_name)
 orig = image.copy()
 imgheight, imgwidth = image.shape[:2]
@@ -154,7 +140,7 @@ for contour in contours:
     r = str(radius)
 
     if (radius > 1 and radius < 5):
-        cv2.circle(orig, center, radius+4, (0, 255, 255), 5)
+        cv2.circle(orig, center, radius + 4, (0, 255, 255), 5)
         res.append([x, y, radius])
 
 connectivity = 4
@@ -168,10 +154,10 @@ res.sort(key=takeX, reverse=False)
 final_res = []
 for i in range(len(res)):
     dup = False
-    for j in range(i+1, len(res)):
-        if(abs(float(res[i][0]) - float(res[j][0])) <= 0.2 and abs(float(res[i][1]) - float(res[j][1])) <= 0.2):
+    for j in range(i + 1, len(res)):
+        if (abs(float(res[i][0]) - float(res[j][0])) <= 0.2 and abs(float(res[i][1]) - float(res[j][1])) <= 0.2):
             dup = True
-    if(not dup):
+    if (not dup):
         final_res.append(res[i])
 
 # print(final_res)  # list of all the star locations.
@@ -182,21 +168,28 @@ for i in range(0, len(final_res)):
     s = Star(final_res[i][0], final_res[i][1], final_res[i][2], "unknown", "noRA", "noDec")
     allStars.append(s)
 
-allTriplesFromFrame = find_all_triplets(allStars,True)
+allTriplesFromFrame = find_all_triplets(allStars)
+print("end from frame")
+
+
 # for i in range(0, len(allTriples)):
 #     print(i)
 
 # print(.TgetDistances())
 # print(T.getAngles(), " : ANGLES")
 
-#TrianglesFromCatalog
-#allTriplesFromFrame
+# TrianglesFromCatalog
+# allTriplesFromFrame
 
-def RMS(frameTripletDistances,catalogTripletDistances):
-    return np.sqrt(np.sum(np.square(catalogTripletDistances[:3]-frameTripletDistances))/len(catalogTripletDistances[:3]))
+def RMS(frameTripletDistances, catalogTripletDistances):
+    return np.sqrt(
+        np.sum(np.square(catalogTripletDistances[:3] - frameTripletDistances)) / len(catalogTripletDistances[:3]))
+
 
 def AD(star1, star2):
-    return math.sin(star1.dec)*math.sin(star2.dec) + math.cos(star1.dec)*math.cos(star2.dec)*math.cos(star1.ra-star2.ra)
+    return math.sin(star1.dec) * math.sin(star2.dec) + math.cos(star1.dec) * math.cos(star2.dec) * math.cos(
+        star1.ra - star2.ra)
+
 
 def BFalgorithm(f, bsc):
     """
@@ -209,28 +202,26 @@ def BFalgorithm(f, bsc):
     # let <si, sj, st> triplet of stars from the database(p=star)
     # let <dp1, dp2, dp3> be the distances from each two stars(distance in pixels)
     bscDistances = []
-    S = 1
+    S = 12000000
     for a in bsc:
-        bscDistances.append([S * AD((a.stars)[0], (a.stars)[1]), S * AD((a.stars)[1], (a.stars)[2]), S * AD((a.stars)[0], (a.stars)[2]), a])
-
-        # for b in bsc:
-        #     for c in bsc:
-        #         if a == b or a == c or b == c:
-        #             continue
-        #         S = 0
-
+        bscDistances.append(
+            [S * AD((a.stars)[0], (a.stars)[1]), S * AD((a.stars)[1], (a.stars)[2]), S * AD((a.stars)[0], (a.stars)[2])])
+    np.sort(np.asarray(bscDistances))
+    print("end sort")
     # let bscDistances <dsi, dsj, dst> be the distances from each two stars(angular)
 
     starMatch = []
     for a in f:
         triangle = []
-        minD = 9999
+        minD = 999999999
+        i = 0
         for b in bscDistances:
-            if minD > RMS(np.asarray(a.getDistances()), np.asarray(b)):
-                triangle.clear()
-                triangle.append(b[3])
-                minD = RMS(np.asarray(a.getDistances()), np.asarray(b))
-        starMatch.append(triangle[0])
+            if minD > RMS(np.sort(np.asarray(a.getDistances())), np.asarray(b)):
+                triangle.append(bsc[i])
+                minD = RMS(np.sort(np.asarray(a.getDistances())), np.asarray(b))
+            i += 1
+            print(i)
+        starMatch.append(triangle[len(triangle)-1])
 
     return starMatch
 
